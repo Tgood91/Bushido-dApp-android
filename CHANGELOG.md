@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased: CI on GitHub Actions
+**What:** `.github/workflows/android.yml` runs `./gradlew test lint assembleDebug` on JDK 21 for
+every push to `main`, every pull request, and on demand. It keeps the test and lint reports and the
+debug APK as artifacts, and `gradle/actions/setup-gradle` checks the Gradle wrapper jar against
+Gradle's published checksums. The README has a status badge and a note.
+**Why:** the repository had no CI, so nothing checked a change before it was merged. Release builds
+stay out of CI because they need the signing key, which belongs only on the owner's machine.
+**Verified:** the same Gradle command passes locally (JDK 21, SDK platform 36). The workflow's first
+real run is on this pull request.
+**Not verified:** whether the runner image already has SDK platform 36; if not, the Android Gradle
+Plugin should download it, which the first run will show.
+
 ## Unreleased: the Kotlin Android app, moved here from Monad-OPSTACK-DEX
 **What:** the Android Studio project that was `Bushido-dApp-android/` in
 [Monad-OPSTACK-DEX](https://github.com/Tgood91/Monad-OPSTACK-DEX) now lives at the root of this

@@ -1,0 +1,57 @@
+# Builds and checks the Android app on every push to main and every pull request.
+# Runs the same commands as the README: unit tests, Android lint and a debug build.
+# Release builds are not made here: they need the signing key, which never leaves the owner's machine.
+name: Android CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # Caches Gradle downloads and checks gradle-wrapper.jar against Gradle's published checksums.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # The runner ships the Android SDK with its licences accepted; the Android Gradle Plugin
+      # downloads platform 36 itself if the image does not have it yet.
+      - name: Unit tests, lint and debug build
+        run: ./gradlew --stacktrace test lint assembleDebug
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: ignore
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

@@ -1,5 +1,7 @@
 # Bushido-dApp-android
 
+[![Android CI](https://github.com/Tgood91/Bushido-dApp-android/actions/workflows/android.yml/badge.svg)](https://github.com/Tgood91/Bushido-dApp-android/actions/workflows/android.yml)
+
 Bushido-dApp in Kotlin for Android devices.
 
 The Android app for **Bushido-dApp**, a non-custodial swap aggregator and cross-chain bridge,
@@ -68,6 +70,10 @@ From the command line:
 ./gradlew assembleDebug   # app/build/outputs/apk/debug/app-debug.apk
 ```
 
+GitHub Actions runs the same three commands on every push to `main` and every pull request
+(`.github/workflows/android.yml`). Each run keeps the test and lint reports and the debug APK as
+downloadable artifacts. Release builds are not made in CI, because they need your signing key.
+
 ## Project structure
 
 ```
@@ -93,6 +99,7 @@ Bushido-dApp-android/
 ├── build.gradle.kts, settings.gradle.kts, gradle.properties
 ├── gradlew, gradlew.bat, gradle/wrapper/
 ├── keystore.properties.example       # template for release signing (copy, never commit)
+├── .github/workflows/android.yml   # CI: tests, lint, debug build
 ├── CHANGELOG.md
 └── LICENSE
 ```
