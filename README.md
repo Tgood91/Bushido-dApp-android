@@ -2,96 +2,182 @@
 
 Bushido-dApp in Kotlin for Android devices.
 
-An Android Studio project, written in Kotlin, that opens https://bushido-dapp.onrender.com
-full-screen as a **Trusted Web Activity**. The page runs in the user's Chrome, not in an
-embedded web view, so:
+The Android app for **Bushido-dApp**, a non-custodial swap aggregator and cross-chain bridge,
+Monad-first, with the Dojo game layer. It opens https://bushido-dapp.onrender.com full-screen,
+with its own icon, splash screen and home-screen shortcuts.
 
-- every update to the site shows up in the app with no new release;
-- **social logins keep working** (Google blocks sign-in inside web views);
-- wallet deep links behave exactly as on the website.
-
-A fully native rewrite of the DEX was ruled out: Reown's Android SDK has no email or social
-login ([support table](https://docs.reown.com/appkit/overview)). The website itself lives in
-[Monad-OPSTACK-DEX](https://github.com/Tgood91/Monad-OPSTACK-DEX); this repository is only the Android app around it.
-
-## Layout
-
-| Path | What it is |
+| | |
 |---|---|
-| `app/src/main/kotlin/.../BushidoLauncherActivity.kt` | The only activity. Extends `LauncherActivity` from Google's android-browser-helper, which does the Chrome handshake, splash and fallback; this class picks the URL. |
-| `app/src/main/kotlin/.../LaunchUrl.kt` | Plain Kotlin: accepts only `https://bushido-dapp.onrender.com/...` links (a tapped link or shortcut), adds `source=pwa`, otherwise opens the home page. |
-| `app/src/test/kotlin/.../LaunchUrlTest.kt` | JUnit tests for the rules above. Run with `./gradlew test`, no phone needed. |
-| `app/src/main/AndroidManifest.xml` | TWA settings as `meta-data` (start URL, colours, splash, orientation, Custom Tabs fallback), the `https://bushido-dapp.onrender.com` link filter with `autoVerify`, the splash `FileProvider`. |
-| `app/src/main/res/values/strings.xml` | `asset_statements`: the app-side half of Digital Asset Links. |
-| `app/src/main/res/xml/shortcuts.xml` | Long-press shortcuts: Swap and Bridge, the same as the web manifest. |
-| `app/src/main/res/mipmap-*`, `drawable-nodpi/splash.png` | Icons made from the PWA icons in [`Bushido-dApp/icons`](https://github.com/Tgood91/Monad-OPSTACK-DEX/tree/main/Bushido-dApp/icons) (adaptive icon on Android 8+, legacy icon below). |
-| `app/build.gradle.kts` | Package ID `io.github.tgood91.bushidodapp`, min SDK 25, target/compile SDK 36, release signing from `keystore.properties`. |
-| `gradle/libs.versions.toml` | Versions: Android Gradle Plugin 8.9.1, Kotlin 2.1.20, android-browser-helper 2.7.4, androidx.browser 1.9.0. |
+| Package ID | `io.github.tgood91.bushidodapp` |
+| Language | Kotlin 2.1 (Gradle Kotlin DSL) |
+| Android | 7.1 and newer (min SDK 25), targets Android 16 (SDK 36) |
+| Website code | [Tgood91/Monad-OPSTACK-DEX](https://github.com/Tgood91/Monad-OPSTACK-DEX) |
+| Status | Builds and passes its tests; not yet run on a real phone |
 
-The site address appears in three places on purpose, because Android needs it as a literal in
-XML: `app/build.gradle.kts` (`SITE_HOST`, also fed to the manifest as `${siteHost}`),
-`res/values/strings.xml` (`asset_statements`) and `res/xml/shortcuts.xml`.
+## How it works
 
-## What you need
+The app is a **Trusted Web Activity** (TWA). It hands the site to the phone's Chrome, which
+shows it full-screen with no address bar. The app never runs its own web view.
 
-- Android Studio (Ladybug or newer) with its bundled JDK 17, or JDK 17+ and the Android SDK
-  (platform 36, build-tools 35) for the command line.
-- An Android signing key. Whoever holds it can publish updates, so back it up and keep it out
-  of git (`*.keystore`, `*.jks` and `keystore.properties` are git-ignored). Losing it means you
-  cannot update the app.
+- **Social login works.** Google blocks sign-in inside embedded web views, and Chrome is not one.
+- **Site updates arrive instantly.** A deploy of the website reaches the app with no new release.
+- **Wallets behave as on the website.** Deep links to wallet apps go through Chrome as usual.
+- **The app holds no keys or funds.** Your wallet signs every transaction, as on the website.
 
-## Build and run
+A fully native rewrite of the DEX was ruled out because Reown's Android SDK has no email or
+social login ([support table](https://docs.reown.com/appkit/overview)).
 
-1. Clone this repository and open its folder in Android Studio (File → Open), then let it sync. On the command
-   line: `./gradlew assembleDebug` (first run downloads Gradle 8.14.3 and the dependencies).
-2. Unit tests: `./gradlew test`.
-3. Run on a phone or emulator with Chrome installed. A debug build shows Chrome's address bar,
-   because the site only vouches for your release signing key (next section).
+On phones without a browser that supports TWAs, the site opens in a Custom Tab instead, which
+still keeps social login.
 
-## Release: make the address bar disappear
+## Features
 
-Android hides the browser bar only if the site vouches for the app. That is two halves:
-`res/values/strings.xml` names the site, and the site's `/.well-known/assetlinks.json`
-([`server/assetlinks.js`](https://github.com/Tgood91/Monad-OPSTACK-DEX/blob/main/server/assetlinks.js) in the website repo) names the
-app's package and signing key.
+- Opens the site's home page at `https://bushido-dapp.onrender.com/?source=pwa`.
+- Long-press the icon for **Swap** and **Bridge** shortcuts.
+- Links to the site, tapped anywhere on the phone, open in the app once the site vouches for it.
+- Only links on `bushido-dapp.onrender.com` are accepted. Anything else opens the home page, so
+  a crafted link cannot show another site under the Bushido name.
+- Dark splash screen and system bars in the site's colour (`#0A0A0F`), and an adaptive icon.
 
-1. Make a keystore once (keep it outside the repo or rely on the ignore rules):
+## Requirements
+
+- **Android Studio** Meerkat Feature Drop (2024.3.2) or newer, using its bundled JDK. The project
+  uses Android Gradle Plugin 8.9, which older versions cannot sync. For the command line instead: JDK 17
+  or newer and the Android SDK with platform 36.
+- A phone or emulator with **Chrome** installed, to run the app.
+- An **Android signing key** for release builds (see [Release build](#release-build)).
+
+## Quick start
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/Tgood91/Bushido-dApp-android.git
+   ```
+2. In Android Studio choose **File → Open** and pick the cloned folder. Let Gradle sync; the
+   first sync downloads Gradle 8.14.3 and the dependencies.
+3. Pick a device and press **Run**.
+
+A debug build shows Chrome's address bar at the top. That is expected: the site only vouches for
+your release signing key.
+
+From the command line:
+
+```
+./gradlew test            # unit tests, no phone needed
+./gradlew lint            # Android lint
+./gradlew assembleDebug   # app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Project structure
+
+```
+Bushido-dApp-android/
+├── app/
+│   ├── build.gradle.kts              # package ID, SDK levels, site host, release signing
+│   ├── proguard-rules.pro
+│   └── src/
+│       ├── main/
+│       │   ├── AndroidManifest.xml   # TWA settings, link filter, shortcuts, splash provider
+│       │   ├── kotlin/io/github/tgood91/bushidodapp/
+│       │   │   ├── BushidoLauncherActivity.kt   # the only activity: picks the URL to open
+│       │   │   └── LaunchUrl.kt                 # accepts only our own links, adds source=pwa
+│       │   └── res/
+│       │       ├── values/strings.xml           # app name and asset_statements
+│       │       ├── values/colors.xml, themes.xml
+│       │       ├── xml/shortcuts.xml            # Swap and Bridge shortcuts
+│       │       ├── xml/filepaths.xml            # lets Chrome draw the splash image
+│       │       ├── drawable*/                   # splash, icon background, notification icon
+│       │       └── mipmap-*/                    # launcher icons
+│       └── test/kotlin/.../LaunchUrlTest.kt     # JUnit tests for LaunchUrl
+├── gradle/libs.versions.toml         # dependency and plugin versions
+├── build.gradle.kts, settings.gradle.kts, gradle.properties
+├── gradlew, gradlew.bat, gradle/wrapper/
+├── keystore.properties.example       # template for release signing (copy, never commit)
+├── CHANGELOG.md
+└── LICENSE
+```
+
+`BushidoLauncherActivity` extends `LauncherActivity` from Google's
+[android-browser-helper](https://github.com/GoogleChrome/android-browser-helper), which does the
+Chrome handshake, splash screen and fallback. The app's own code only chooses which page to open.
+
+## Release build
+
+Android hides the address bar only when the site and the app vouch for each other:
+
+- the app names the site in `res/values/strings.xml` (`asset_statements`);
+- the site names the app's package and signing key at
+  https://bushido-dapp.onrender.com/.well-known/assetlinks.json, served by
+  [`server/assetlinks.js`](https://github.com/Tgood91/Monad-OPSTACK-DEX/blob/main/server/assetlinks.js)
+  in the website repository.
+
+Steps:
+
+1. Create a signing key once. Keep it backed up and out of git: whoever holds it can publish
+   updates, and losing it means you can never update the app.
    ```
    keytool -genkeypair -v -keystore android.keystore -alias bushido -keyalg RSA -keysize 2048 -validity 10000
    ```
-2. Copy `keystore.properties.example` to `keystore.properties` and fill in the path, alias and
-   passwords. `./gradlew assembleRelease` now produces a signed APK in
-   `app/build/outputs/apk/release/`, and `./gradlew bundleRelease` the `.aab` for Google Play.
-   Android Studio's Build → *Generate Signed App Bundle / APK* works too.
-3. Get the key's **SHA-256 fingerprint**:
+2. Copy `keystore.properties.example` to `keystore.properties` and fill in the keystore path,
+   alias and passwords. The file is git-ignored.
+3. Build:
+   ```
+   ./gradlew assembleRelease   # signed APK in app/build/outputs/apk/release/
+   ./gradlew bundleRelease     # .aab for Google Play in app/build/outputs/bundle/release/
+   ```
+   Android Studio's **Build → Generate Signed App Bundle / APK** works too, without the
+   properties file.
+4. Read the key's SHA-256 fingerprint and copy the `SHA256:` line, which looks like
+   `14:6D:E9:…` (32 pairs):
    ```
    keytool -list -v -keystore android.keystore -alias bushido
    ```
-   Copy the `SHA256:` line; it looks like `14:6D:E9:…` (32 pairs).
-4. In Render → your service → Environment, add `ANDROID_CERT_SHA256` with that fingerprint, then
-   **Save and deploy**. Check https://bushido-dapp.onrender.com/.well-known/assetlinks.json shows
-   it.
-5. Install the release APK. If the address bar still shows, step 4 isn't matching yet (wrong
-   package ID or fingerprint, or the deploy isn't finished). Chrome caches the check, so clear
-   Chrome's data or reinstall the app after fixing it.
+5. On Render, open the website's service, go to **Environment**, set `ANDROID_CERT_SHA256` to that
+   fingerprint, then **Save and deploy**. Check that
+   https://bushido-dapp.onrender.com/.well-known/assetlinks.json shows it.
+6. Install the release APK. The address bar should be gone.
 
 ## Google Play
 
-- Create a developer account (one-time fee), then upload the `.aab`.
-- With **Play App Signing** (the default) Google re-signs the app with its own key. Copy that
-  key's SHA-256 from Play Console → *App integrity* and add it to `ANDROID_CERT_SHA256` too,
-  comma separated. Keep your upload key's fingerprint in the list as well.
-- Play will ask about a finance/crypto declaration and a privacy policy URL.
+- Create a Google Play developer account (one-time fee) and upload the `.aab`.
+- With **Play App Signing** (the default), Google re-signs the app with its own key. Copy that
+  key's SHA-256 from Play Console → **App integrity** and add it to `ANDROID_CERT_SHA256`,
+  separated by a comma. Keep your upload key's fingerprint in the list too.
+- Play asks for a finance or crypto declaration and a privacy policy URL.
 
-## Changing the package ID
+## Configuration
 
-It is permanent once published. Change `applicationId` and `namespace` in
-`app/build.gradle.kts`, the package folder under `app/src/main/kotlin`, `targetPackage` and
-`targetClass` in `res/xml/shortcuts.xml`, and set `ANDROID_PACKAGE_NAME` in Render to match.
+**Site address.** Android needs it written out in XML, so it appears in three places. Change all
+three together:
 
-## Not tested
+- `app/build.gradle.kts`: `SITE_HOST` and `manifestPlaceholders["siteHost"]`;
+- `app/src/main/res/values/strings.xml`: the `site` inside `asset_statements`;
+- `app/src/main/res/xml/shortcuts.xml`: both `android:data` URLs.
 
-Nothing here has run on a real phone: the Chrome handshake, the hidden address bar, social
-login inside the app and wallet app links are untested. The server side
-(`/.well-known/assetlinks.json`) is tested in the website repo. See [CHANGELOG.md](CHANGELOG.md) for
-what was and was not built.
+**Package ID.** It is permanent once the app is on Google Play. To change it before then, edit
+`applicationId` and `namespace` in `app/build.gradle.kts`, move the package folder under
+`app/src/main/kotlin`, update `targetPackage` and `targetClass` in `res/xml/shortcuts.xml`, and set
+`ANDROID_PACKAGE_NAME` on Render to match.
+
+**Version.** Raise `versionCode` by one and set `versionName` in `app/build.gradle.kts` for every
+release uploaded to Google Play.
+
+## Troubleshooting
+
+| What you see | Likely cause |
+|---|---|
+| The address bar shows on a release build | The fingerprint or package on Render doesn't match, or the deploy isn't finished. Chrome caches the check: clear Chrome's data or reinstall the app after fixing it. |
+| The address bar shows on a debug build | Expected. Only the release key is vouched for. |
+| The site opens in a tab with a close button | The phone has no browser that supports TWAs, so the Custom Tab fallback is in use. Install or update Chrome. |
+| Gradle sync asks for SDK platform 36 | Install it in Android Studio under **Tools → SDK Manager**. |
+| `assembleRelease` gives an unsigned APK | `keystore.properties` is missing or its path is wrong. |
+
+## Not tested yet
+
+The app builds, its unit tests pass and lint reports no errors. Nothing has run on a phone or
+emulator yet: the Chrome handshake, the hidden address bar, social login inside the app and wallet
+app links are all unverified. See [CHANGELOG.md](CHANGELOG.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE).

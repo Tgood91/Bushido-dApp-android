@@ -3,7 +3,9 @@
 ## Unreleased: the Kotlin Android app, moved here from Monad-OPSTACK-DEX
 **What:** the Android Studio project that was `Bushido-dApp-android/` in
 [Monad-OPSTACK-DEX](https://github.com/Tgood91/Monad-OPSTACK-DEX) now lives at the root of this
-repository, unchanged apart from the README links. It is a Gradle Kotlin DSL project (Kotlin 2.1,
+repository. The README was rewritten as the repository's front page: how the TWA works, features,
+requirements, quick start, project structure, release and Play steps, configuration and
+troubleshooting. It is a Gradle Kotlin DSL project (Kotlin 2.1,
 Android Gradle Plugin 8.9, min SDK 25, target SDK 36). `BushidoLauncherActivity` extends
 `LauncherActivity` from Google's android-browser-helper and opens https://bushido-dapp.onrender.com
 as a Trusted Web Activity. `LaunchUrl.kt` is plain Kotlin that accepts only links on that host and
