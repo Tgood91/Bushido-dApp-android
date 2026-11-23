@@ -10,9 +10,9 @@ private keys. `OllamaApi.kt` (URL normalisation, request and reply JSON) is plai
 tests; `OllamaClient.kt` does the HTTP call. A network security config allows cleartext, because
 Ollama serves plain http at a LAN address; the dApp itself still runs in Chrome.
 **Why:** the owner asked for local model support, as a hamburger menu with the chat window inside.
-**Not verified:** the Gradle build (tests, lint, debug APK) had not finished when this was
-committed; the first attempt failed on a Maven Central rate limit. Not run on a phone or emulator,
-and not tried against a real Ollama server.
+**Verified:** `./gradlew test lint assembleDebug` passes (JDK 21, SDK platform 36): 12 unit tests
+(8 new in `OllamaApiTest`), lint with no errors, and a debug APK.
+**Not verified:** not run on a phone or emulator, and not tried against a real Ollama server.
 
 ## Unreleased: CI on GitHub Actions
 **What:** `.github/workflows/android.yml` runs `./gradlew test lint assembleDebug` on JDK 21 for
