@@ -5,12 +5,16 @@ androidxBrowser = "1.9.0"
 browserHelper = "2.7.4"
 androidxCore = "1.15.0"
 junit = "4.13.2"
+drawerlayout = "1.2.0"
+orgJson = "20250517"
 
 [libraries]
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "androidxBrowser" }
 browser-helper = { group = "com.google.androidbrowserhelper", name = "androidbrowserhelper", version.ref = "browserHelper" }
 androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-drawerlayout = { group = "androidx.drawerlayout", name = "drawerlayout", version.ref = "drawerlayout" }
+org-json = { group = "org.json", name = "json", version.ref = "orgJson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

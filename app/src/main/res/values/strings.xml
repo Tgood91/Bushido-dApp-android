@@ -4,6 +4,29 @@
     <string name="launcher_name">Bushido</string>
     <string name="shortcut_swap">Swap</string>
     <string name="shortcut_bridge">Bridge</string>
+    <string name="shortcut_assistant">Assistant</string>
+    <string name="shortcut_assistant_long">Local AI assistant</string>
+
+    <!-- The assistant screen: one hamburger menu holding the chat with a local Ollama model. -->
+    <string name="assistant_title">Assistant</string>
+    <string name="assistant_open_menu">Open the assistant chat</string>
+    <string name="assistant_close_menu">Close the assistant chat</string>
+    <string name="assistant_home_hint">Tap ☰ to chat with the AI model running on your own computer through Ollama.</string>
+    <string name="assistant_open_dapp">Open Bushido</string>
+    <string name="assistant_clear">Clear</string>
+    <string name="assistant_input_hint">Ask about swaps, bridging, Monad…</string>
+    <string name="assistant_send">Send</string>
+    <string name="assistant_thinking">…</string>
+    <string name="assistant_welcome">Hi! I run on your own Ollama server, so nothing you type leaves your network. I can\'t see your wallet. Never share your seed phrase or private keys, with me or anyone.</string>
+    <string name="assistant_server_label">%1$s · %2$s  (tap to change)</string>
+    <string name="assistant_error">Couldn\'t reach Ollama at %1$s: %2$s\n\nIs Ollama running with OLLAMA_HOST=0.0.0.0, and is the phone on the same network? Tap the server line above to change it.</string>
+    <string name="assistant_settings_title">Ollama server</string>
+    <string name="assistant_settings_help">Your computer\'s address on the local network, such as 192.168.1.20 (the emulator uses 10.0.2.2), and a model you have pulled, such as llama3.2.</string>
+    <string name="assistant_settings_url_hint">Server address</string>
+    <string name="assistant_settings_model_hint">Model name</string>
+    <string name="assistant_settings_invalid">Enter an http or https address and a model name.</string>
+    <string name="assistant_system_prompt" translatable="false">You are the Bushido assistant inside the Bushido-dApp Android app. Bushido-dApp is a non-custodial swap aggregator and cross-chain bridge, Monad-first, with a game layer called the Dojo. Answer briefly and plainly. You cannot see the user\'s wallet, balances or transactions and cannot make trades. Never ask for a seed phrase, recovery phrase or private key; if the user shares one, tell them to treat it as compromised and move their funds. Do not give financial advice. If you do not know something about Bushido, say so.</string>
+
     <!-- Digital Asset Links, app side. The site side is /.well-known/assetlinks.json (server/assetlinks.js). -->
     <string name="asset_statements" translatable="false">[{ \"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": { \"namespace\": \"web\", \"site\": \"https://bushido-dapp.onrender.com\" } }]</string>
 </resources>

@@ -74,5 +74,7 @@ dependencies {
     implementation(libs.browser.helper) // LauncherActivity and the TWA meta-data conventions
     implementation(libs.androidx.browser)
     implementation(libs.androidx.core)
+    implementation(libs.androidx.drawerlayout) // the assistant's slide-out chat panel
     testImplementation(libs.junit)
+    testImplementation(libs.org.json) // real org.json for unit tests; android.jar only has stubs
 }

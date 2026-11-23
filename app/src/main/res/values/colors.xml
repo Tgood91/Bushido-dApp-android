@@ -5,4 +5,10 @@
     <!-- Corners of the icon gradient (Bushido-dApp/icons/maskable-512.png) -->
     <color name="icon_gradient_start">#2D768A</color>
     <color name="icon_gradient_end">#9E5699</color>
+    <!-- The assistant screen -->
+    <color name="assistant_panel">#12121A</color>
+    <color name="assistant_bubble">#1E1E2A</color>
+    <color name="assistant_text">#F2F2F7</color>
+    <color name="assistant_muted">#9A9AAE</color>
+    <color name="assistant_error">#FF8A8A</color>
 </resources>

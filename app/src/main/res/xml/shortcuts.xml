@@ -25,4 +25,15 @@
             android:targetClass="io.github.tgood91.bushidodapp.BushidoLauncherActivity"
             android:targetPackage="io.github.tgood91.bushidodapp" />
     </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="assistant"
+        android:shortcutLongLabel="@string/shortcut_assistant_long"
+        android:shortcutShortLabel="@string/shortcut_assistant">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="io.github.tgood91.bushidodapp.AssistantActivity"
+            android:targetPackage="io.github.tgood91.bushidodapp" />
+    </shortcut>
 </shortcuts>

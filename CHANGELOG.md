@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased: local AI assistant (Ollama)
+**What:** a native `AssistantActivity`, opened from a new **Assistant** long-press shortcut. It has
+a single hamburger menu (☰); the menu slides out the chat window, which sends the conversation to
+an Ollama server's `/api/chat` on the user's computer or LAN. The server address and model are set
+by tapping the server line in the chat (default `http://10.0.2.2:11434`, the emulator's host, and
+`llama3.2`). A system prompt describes Bushido and tells the model never to ask for seed phrases or
+private keys. `OllamaApi.kt` (URL normalisation, request and reply JSON) is plain Kotlin with JUnit
+tests; `OllamaClient.kt` does the HTTP call. A network security config allows cleartext, because
+Ollama serves plain http at a LAN address; the dApp itself still runs in Chrome.
+**Why:** the owner asked for local model support, as a hamburger menu with the chat window inside.
+**Not verified:** the Gradle build (tests, lint, debug APK) had not finished when this was
+committed; the first attempt failed on a Maven Central rate limit. Not run on a phone or emulator,
+and not tried against a real Ollama server.
+
 ## Unreleased: CI on GitHub Actions
 **What:** `.github/workflows/android.yml` runs `./gradlew test lint assembleDebug` on JDK 21 for
 every push to `main`, every pull request, and on demand. It keeps the test and lint reports and the
