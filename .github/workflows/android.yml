@@ -1,6 +1,6 @@
 # Builds and checks the Android app on every push to main and every pull request.
 # Runs the same commands as the README: unit tests, Android lint and a debug build.
-# Release builds are not made here: they need the signing key, which never leaves the owner's machine.
+# Release builds are not made here: release.yml builds them on demand, with the signing key from repository secrets.
 name: Android CI
 
 on:

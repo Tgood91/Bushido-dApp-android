@@ -1,0 +1,102 @@
+# Builds a signed release APK (and the .aab for Google Play), on demand only: Actions → Release APK → Run workflow.
+#
+# The signing key comes from four repository secrets (Settings → Secrets and variables → Actions):
+#   ANDROID_KEYSTORE_BASE64    the keystore file, base64-encoded (see the README's "Release build")
+#   ANDROID_KEYSTORE_PASSWORD  the keystore's password
+#   ANDROID_KEY_ALIAS          the key's alias (bushido if you followed the README)
+#   ANDROID_KEY_PASSWORD       the key's password
+# The keystore is written to the runner's temp folder for this one build and deleted afterwards, even on failure.
+# It is never uploaded: the artifacts are only the signed APK and AAB. The job summary shows the key's SHA-256
+# fingerprint, which is public and goes into ANDROID_CERT_SHA256 on Render.
+name: Release APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: true
+
+      - name: Write the signing config
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          for v in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Secret ANDROID_${v} is not set (Settings → Secrets and variables → Actions)."
+              exit 1
+            fi
+          done
+          ks="$RUNNER_TEMP/release.keystore"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$ks"
+          {
+            echo "storeFile=$ks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Build the signed APK and AAB
+        run: ./gradlew --stacktrace assembleRelease bundleRelease
+
+      - name: Check the signature and show the fingerprint
+        run: |
+          apk=app/build/outputs/apk/release/app-release.apk
+          if [ ! -f "$apk" ]; then
+            echo "::error::No signed APK: Gradle did not pick up keystore.properties."
+            ls -la app/build/outputs/apk/release/ || true
+            exit 1
+          fi
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          "$apksigner" verify --print-certs "$apk" | tee signature.txt
+          sha=$(grep -m1 'SHA-256 digest' signature.txt | awk '{print $NF}' | tr 'a-f' 'A-F' | sed 's/../&:/g; s/:$//')
+          {
+            echo "### Signed release built"
+            echo
+            echo "Signing key SHA-256 (set this as \`ANDROID_CERT_SHA256\` on Render):"
+            echo
+            echo "\`$sha\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Delete the signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.keystore" keystore.properties signature.txt
+
+      - name: Upload the release APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      - name: Upload the release bundle (Google Play)
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-release-aab
+          path: app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

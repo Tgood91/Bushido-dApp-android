@@ -144,6 +144,35 @@ Steps:
    https://bushido-dapp.onrender.com/.well-known/assetlinks.json shows it.
 6. Install the release APK. The address bar should be gone.
 
+### Release build on GitHub Actions
+
+The **Release APK** workflow (`.github/workflows/release.yml`) builds the signed APK and the `.aab`
+on demand, so you don't need Android Studio for a release. The key is still created on your
+computer; GitHub keeps a copy as encrypted repository secrets.
+
+1. Create the key once, as in step 1 above, and back it up somewhere safe outside git.
+2. Base64-encode it (Git Bash on Windows, or any terminal):
+   ```
+   base64 -w0 android.keystore > android.keystore.b64
+   ```
+   On macOS use `base64 -i android.keystore -o android.keystore.b64`.
+3. In the repository: **Settings → Secrets and variables → Actions → New repository secret**, add:
+
+   | Secret | Value |
+   |---|---|
+   | `ANDROID_KEYSTORE_BASE64` | the contents of `android.keystore.b64` |
+   | `ANDROID_KEYSTORE_PASSWORD` | the keystore password |
+   | `ANDROID_KEY_ALIAS` | `bushido` (or the alias you chose) |
+   | `ANDROID_KEY_PASSWORD` | the key password |
+
+   Then delete `android.keystore.b64`. Avoid backslashes in the passwords: the build reads them
+   from a Java properties file.
+4. **Actions → Release APK → Run workflow** (on `main`). When it finishes, download
+   `app-release-apk` (the APK to install) and `app-release-aab` (for Google Play) from the run's
+   **Artifacts**.
+5. The run's summary shows the key's SHA-256 fingerprint. Set it as `ANDROID_CERT_SHA256` on Render
+   (step 5 above). The keystore is deleted from the runner after every run and is never uploaded.
+
 ## Google Play
 
 - Create a Google Play developer account (one-time fee) and upload the `.aab`.
