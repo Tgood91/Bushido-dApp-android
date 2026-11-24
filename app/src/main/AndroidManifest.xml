@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Trusted Web Activities run the site in the user's Chrome; the app itself touches no network. -->
+    <!-- The site runs in the user's browser (Trusted Web Activity), but INTERNET is kept so the
+         Custom Tab fallback and any in-app network calls work. It is a normal permission, granted at install. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <queries>
