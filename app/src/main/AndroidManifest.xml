@@ -90,6 +90,17 @@
             </intent-filter>
         </activity>
 
+        <!-- The native dojo screen: its own launcher icon, next to the web app's. -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/dojo_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <!-- Hands the splash image to Chrome so it can draw it while the page loads. -->
         <provider
             android:name="androidx.core.content.FileProvider"

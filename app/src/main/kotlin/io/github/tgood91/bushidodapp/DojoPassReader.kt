@@ -4,10 +4,11 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Executors
-import org.json.JSONArray
-import org.json.JSONObject
 
-/** Reads Dojo Pass status straight from the DojoPass contract on Monad mainnet (chain id 143). */
+/**
+ * Reads Dojo Pass status straight from the DojoPass contract on Monad mainnet (chain id 143).
+ * Plain Kotlin/JVM: no Android types, so it runs and is tested on any JVM.
+ */
 object DojoPassReader {
 
     private const val RPC_URL = "https://rpc.monad.xyz"
@@ -19,6 +20,9 @@ object DojoPassReader {
 
     private val ADDRESS = Regex("^0x[0-9a-fA-F]{40}$")
     private val WORD = Regex("^0x[0-9a-fA-F]{64}$")
+    private val RESULT = Regex("\"result\"\\s*:\\s*\"(0x[0-9a-fA-F]*)\"")
+    private val ERROR = Regex("\"error\"\\s*:\\s*\\{")
+    private val MESSAGE = Regex("\"message\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"")
 
     data class PassStatus(val hasPass: Boolean, val isPractitioner: Boolean)
 
@@ -43,6 +47,20 @@ object DojoPassReader {
         return selector + "0".repeat(24) + wallet.substring(2).lowercase()
     }
 
+    /** The JSON-RPC `eth_call` body. Every value in it is a fixed constant or validated hex. */
+    internal fun requestBody(data: String): String =
+        """{"jsonrpc":"2.0","id":1,"method":"eth_call","params":[{"to":"$DOJO_PASS","data":"$data"},"latest"]}"""
+
+    /** Pulls the hex `result` out of a JSON-RPC response, or throws with the node's error message. */
+    internal fun parseResult(response: String): String {
+        if (ERROR.containsMatchIn(response)) {
+            val message = MESSAGE.find(response)?.groupValues?.get(1) ?: "unknown error"
+            throw IOException("RPC error: $message")
+        }
+        return RESULT.find(response)?.groupValues?.get(1)
+            ?: throw IOException("RPC response has no result")
+    }
+
     /**
      * Decodes an ABI `bool` return word. Anything else ("0x" from a revert or a missing contract,
      * short or dirty words) is an error, never a silent `true`.
@@ -59,18 +77,7 @@ object DojoPassReader {
     }
 
     private fun ethCallBool(selector: String, wallet: String): Boolean {
-        val body = JSONObject()
-            .put("jsonrpc", "2.0")
-            .put("id", 1)
-            .put("method", "eth_call")
-            .put(
-                "params",
-                JSONArray()
-                    .put(JSONObject().put("to", DOJO_PASS).put("data", encodeAddressCall(selector, wallet)))
-                    .put("latest"),
-            )
-            .toString()
-
+        val body = requestBody(encodeAddressCall(selector, wallet))
         val conn = URL(RPC_URL).openConnection() as HttpURLConnection
         try {
             conn.requestMethod = "POST"
@@ -83,11 +90,8 @@ object DojoPassReader {
             val code = conn.responseCode
             if (code != HttpURLConnection.HTTP_OK) throw IOException("RPC HTTP $code")
 
-            val response = JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
-            response.optJSONObject("error")?.let {
-                throw IOException("RPC error ${it.optInt("code")}: ${it.optString("message")}")
-            }
-            return decodeBool(response.getString("result"))
+            val response = conn.inputStream.bufferedReader().use { it.readText() }
+            return decodeBool(parseResult(response))
         } finally {
             conn.disconnect()
         }

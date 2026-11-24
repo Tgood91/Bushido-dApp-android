@@ -6,4 +6,19 @@
     <string name="shortcut_bridge">Bridge</string>
     <!-- Digital Asset Links, app side. The site side is /.well-known/assetlinks.json (server/assetlinks.js). -->
     <string name="asset_statements" translatable="false">[{ \"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": { \"namespace\": \"web\", \"site\": \"https://bushido-dapp.onrender.com\" } }]</string>
+    <!-- Native dojo screen (MainActivity) -->
+    <string name="dojo_name">Dojo</string>
+    <string name="label_streak">Day streak</string>
+    <string name="label_total">Check-ins</string>
+    <string name="check_in">Check in for today</string>
+    <string name="checked_in">Checked in ✓</string>
+    <string name="dojo_pass_status">Dojo Pass: %1$s</string>
+    <string name="dojo_prac_status">Practitioner: %1$s</string>
+    <string name="status_checking">checking…</string>
+    <string name="status_held">HELD ✓</string>
+    <string name="status_not_held">NOT HELD</string>
+    <string name="status_yes">YES ✓</string>
+    <string name="status_no">NO</string>
+    <string name="status_unreachable">couldn\'t reach Monad</string>
+    <string name="status_unknown">—</string>
 </resources>

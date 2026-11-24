@@ -39,4 +39,30 @@ class DojoPassReaderTest {
             assertThrows(IOException::class.java) { DojoPassReader.decodeBool(bad) }
         }
     }
+
+    @Test
+    fun `request body is a well-formed eth_call`() {
+        val data = DojoPassReader.encodeAddressCall(DojoPassReader.SEL_PRACTITIONER, wallet)
+        assertEquals(
+            """{"jsonrpc":"2.0","id":1,"method":"eth_call","params":[""" +
+                """{"to":"0x2647faf3aaA708D0B9a110744790E1f637FCca53","data":"$data"},"latest"]}""",
+            DojoPassReader.requestBody(data),
+        )
+    }
+
+    @Test
+    fun `parses result and surfaces RPC errors`() {
+        val word = "0x" + "0".repeat(63) + "1"
+        assertEquals(word, DojoPassReader.parseResult("""{"jsonrpc":"2.0","id":1,"result":"$word"}"""))
+        assertEquals("0x", DojoPassReader.parseResult("""{"jsonrpc":"2.0","id":1, "result" : "0x"}"""))
+
+        val err = assertThrows(IOException::class.java) {
+            DojoPassReader.parseResult(
+                """{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"execution \"reverted\""}}""",
+            )
+        }
+        assertEquals("RPC error: execution \\\"reverted\\\"", err.message)
+
+        assertThrows(IOException::class.java) { DojoPassReader.parseResult("""{"jsonrpc":"2.0","id":1}""") }
+    }
 }

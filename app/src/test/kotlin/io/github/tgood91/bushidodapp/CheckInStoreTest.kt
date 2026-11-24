@@ -7,6 +7,8 @@ import io.github.tgood91.bushidodapp.CheckInStore.Companion.rankFor
 import io.github.tgood91.bushidodapp.CheckInStore.State
 import java.util.TimeZone
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CheckInStoreTest {
@@ -62,5 +64,25 @@ class CheckInStoreTest {
         assertEquals("Samurai", rankFor(60))
         assertEquals("Bushido Master", rankFor(75))
         assertEquals("Shogun", rankFor(90))
+    }
+
+    @Test
+    fun `store checks in through its storage on plain JVM`() {
+        var now = day
+        val storage = CheckInStore.InMemoryStorage()
+        val store = CheckInStore(storage) { now }
+
+        assertFalse(store.checkedInToday())
+        assertEquals(State(1, 1, day), store.checkIn())
+        assertTrue(store.checkedInToday())
+        assertEquals(State(1, 1, day), store.checkIn())
+
+        now = day + 1
+        assertEquals(State(2, 2, day + 1), store.checkIn())
+        assertEquals(State(2, 2, day + 1), storage.read())
+
+        now = day + 3
+        assertEquals(0, store.state().streak)
+        assertEquals(State(1, 3, day + 3), store.checkIn())
     }
 }

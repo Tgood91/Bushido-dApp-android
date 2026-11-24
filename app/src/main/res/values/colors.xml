@@ -5,4 +5,7 @@
     <!-- Corners of the icon gradient (Bushido-dApp/icons/maskable-512.png) -->
     <color name="icon_gradient_start">#2D768A</color>
     <color name="icon_gradient_end">#9E5699</color>
+    <!-- Text on bushido_background in the native dojo screen -->
+    <color name="dojo_text">#F2F2F5</color>
+    <color name="dojo_text_muted">#A0A0AE</color>
 </resources>
